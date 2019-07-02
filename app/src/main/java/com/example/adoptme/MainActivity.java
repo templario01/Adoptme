@@ -5,20 +5,24 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.TaskStackBuilder;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -50,11 +54,8 @@ public class MainActivity extends AppCompatActivity {
     String fecha,hora,idfoto;
     Button btnGuardar;
     private DatabaseReference Perro;
-    boolean registroguardado;
 
-    //variables para notificaciones
-    NotificationCompat.Builder mBuilder;
-    private static final int idUnica = 51623;
+
 
     //variables para el storage del celular
     private ImageView imageView;
@@ -114,8 +115,6 @@ public class MainActivity extends AppCompatActivity {
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
 
-        mBuilder = new NotificationCompat.Builder(this);
-        mBuilder.setAutoCancel(true);
 
         ImageButton ubicacion = (ImageButton) findViewById(R.id.btnUbicacion);
         ubicacion.setOnClickListener(new View.OnClickListener() {
@@ -131,9 +130,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 guardarPerro();
-                if (registroguardado==true){
-                    uploadImage();
-                }
+                displayNotification();
             }
         });
         btnChoose = (Button)findViewById(R.id.btnChoose);
@@ -180,8 +177,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                             progressDialog.dismiss();
-                            Toast.makeText(MainActivity.this,"Imagen subida",Toast.LENGTH_SHORT).show();
-                            notificar();
+                            Toast.makeText(MainActivity.this,"Imagen e informacion almacenados con exito",Toast.LENGTH_SHORT).show();
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -198,7 +194,6 @@ public class MainActivity extends AppCompatActivity {
                             progressDialog.setMessage("Subiendo "+(int)progress+"%");
                         }
                     });
-
         }
     }
     // metodo para guardar en la base de datos
@@ -212,16 +207,15 @@ public class MainActivity extends AppCompatActivity {
             String id = Perro.push().getKey();
             Perro perro = new Perro(Double.valueOf(latitud),Double.valueOf(longitud),tamano,color,"1","2",idfoto);
             Perro.child("perros").child(id).setValue(perro);
-            Toast.makeText(getBaseContext(),"Perro guardado con exito",Toast.LENGTH_SHORT).show();
-            registroguardado=true;
+            uploadImage();
+            Toast.makeText(MainActivity.this,"Perro guardado con exito",Toast.LENGTH_SHORT).show();
+
+
         } catch(Exception e) {
-            Toast.makeText(getBaseContext(),"Ocurrio un error",Toast.LENGTH_SHORT).show();
             //si falla guardar mascota obligamos a que falle la subida de la imagen
-            filePath=null;
-            registroguardado=false;
+            Toast.makeText(MainActivity.this,"Error",Toast.LENGTH_SHORT).show();
+
         }
-        txtlat.setText("");
-        txtlng.setText("");
         spinColor.setSelection(0);
         spinTamano.setSelection(0);
     }
@@ -232,17 +226,51 @@ public class MainActivity extends AppCompatActivity {
         txtlat.setText(latitud);
         txtlng.setText(longitud);
     }
-    public void notificar(){
-        mBuilder.setSmallIcon(R.mipmap.ic_launcher);
-        mBuilder.setTicker("Nueva notificacion");
-        mBuilder.setWhen(System.currentTimeMillis());
-        mBuilder.setContentTitle("Titulo");
-        mBuilder.setContentTitle("Gracias por añadir un nuevo animal");
-        Intent intent2 = new Intent(MainActivity.this,MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(MainActivity.this,0,intent2,PendingIntent.FLAG_UPDATE_CURRENT);
-        mBuilder.setContentIntent(pendingIntent);
+    protected void displayNotification(){
+        String CHANNEL_ID = "my_channel_01";
+        /*
+        NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, importance);
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this,CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("mi notificacion")
+                .setContentText("reunion a las 9:30");
+        Intent resultIntent = new Intent(this,NotificationView.class);
+        int mNotificationId = 001;
+        NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNotifyMgr.notify(mNotificationId,mBuilder.build());
+        */
+        int NOTIFICATION_ID = 234;
 
-        NotificationManager mNotifyMgr =(NotificationManager) getApplicationContext().getSystemService(NOTIFICATION_SERVICE);
-        mNotifyMgr.notify(idUnica,mBuilder.build());
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            CHANNEL_ID = "my_channel_01";
+            CharSequence name = "my_channel";
+            String Description = "This is my channel";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, importance);
+            mChannel.setDescription(Description);
+            mChannel.enableLights(true);
+            mChannel.setLightColor(Color.RED);
+            mChannel.enableVibration(true);
+            mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+            mChannel.setShowBadge(false);
+            notificationManager.createNotificationChannel(mChannel);
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("Notificacion")
+                .setContentText("Gracias por contribuir con la comunidad guardando un nuevo perro");
+
+        Intent resultIntent = new Intent(this, MainActivity.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addParentStack(MainActivity.class);
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        builder.setContentIntent(resultPendingIntent);
+
+        notificationManager.notify(NOTIFICATION_ID, builder.build());
+
     }
 }

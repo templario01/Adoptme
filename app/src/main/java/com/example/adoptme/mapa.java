@@ -85,6 +85,7 @@ public class mapa extends FragmentActivity implements OnMapReadyCallback {
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        // aca intentamos traer en el mapa todos los perros almacenados en el mapa previamente
         Perro1.child("perros").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -99,7 +100,6 @@ public class mapa extends FragmentActivity implements OnMapReadyCallback {
                         //tmpRealTimeMarkers.add(mMap.addMarker(markerOptions));
                         mMap.addMarker(markerOptions);
                     }catch(Exception e){
-                        Toast.makeText(getBaseContext(),"Ocurrio un error",Toast.LENGTH_SHORT).show();
                         LatLng arequipa = new LatLng(-16.3988, -71.5369);
                         mMap.addMarker(new MarkerOptions().position(arequipa).title("Arequipa").icon(BitmapDescriptorFactory.fromResource(R.drawable.dogmark)));
                         mMap.moveCamera(CameraUpdateFactory.newLatLng(arequipa));
