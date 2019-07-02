@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "29711109690",
+    "firebase_url": "https://adoptmeapp-ac48c.firebaseio.com",
+    "project_id": "adoptmeapp-ac48c",
+    "storage_bucket": "adoptmeapp-ac48c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:29711109690:android:64a4a9fa785b4373",
+        "android_client_info": {
+          "package_name": "com.example.adoptme"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "29711109690-qhtmgk75ah6gha3vafhlkr5ofehcgtrt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.adoptme",
+            "certificate_hash": "a2620f8d8f25ce5f7a7b61d71e1314841fcee386"
+          }
+        },
+        {
+          "client_id": "29711109690-o9pp9t63luc87mb9ffde2g6t8vmg5v1l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDU9yC-mq2da-Gt5E1RSVhtlNtAi4B9hcQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "29711109690-o9pp9t63luc87mb9ffde2g6t8vmg5v1l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
